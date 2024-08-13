@@ -27,6 +27,8 @@ dashboard "ec2_instance_dashboard" {
       href  = dashboard.ec2_instance_public_access_report.url_path
     }
 
+
+
     card {
       query = query.ec2_ebs_optimized_count
       width = 2
@@ -115,6 +117,30 @@ dashboard "ec2_instance_dashboard" {
       query = query.ec2_instance_cost_per_month
     }
 
+  }
+
+  container {
+
+    title = "Instances"
+    width = 20
+
+    table {
+      title = "Attached Security Groups"
+      width = 4
+      sql = <<-EOQ
+        select 
+        instance_id, 
+        region, 
+        sg->>'GroupId' as security_group
+      from 
+        aws_ec2_instance, 
+        jsonb_array_elements(security_groups) as sg      
+    EOQ
+
+    column "security_group" {
+                href = "/aws_insights.dashboard.vpc_security_group_detail?input.security_group_id={{.'security_group' | @uri}}"
+            }
+  }
   }
 
   container {
